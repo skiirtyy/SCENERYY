@@ -1,0 +1,18 @@
+ Volume in drive C has no label.
+ Volume Serial Number is 4C92-261E
+
+ Directory of C:\Users\MICROTEL\Downloads\scene_description_api
+
+04/20/2025  09:42 PM    <DIR>          .
+04/20/2025  09:42 PM    <DIR>          ..
+04/19/2025  02:46 PM    <DIR>          .venv
+04/19/2025  02:24 PM             3,359 app.py
+04/19/2025  02:24 PM             6,833 categories_places365.txt
+04/19/2025  02:24 PM             1,992 places_model.py
+04/19/2025  02:24 PM        45,506,139 resnet18_places365.pth.tar
+04/20/2025  09:25 PM    <DIR>          Scene
+04/20/2025  09:35 PM            13,067 temp.jpg
+04/20/2025  09:42 PM                 0 test.txt
+04/19/2025  03:25 PM    <DIR>          __pycache__
+               6 File(s)     45,531,390 bytes
+               5 Dir(s)  58,062,815,232 bytes free
