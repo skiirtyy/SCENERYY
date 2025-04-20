@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from flask import Flask, request, render_template_string
+from flask import Flask, request, jsonify
 import torch
 from torchvision import models, transforms
 from PIL import Image
@@ -9,8 +9,6 @@ import urllib.request
 app = Flask(__name__)
 
 # Load categories
-
-
 def load_categories():
     file_name = 'categories_places365.txt'
     if not os.path.exists(file_name):
@@ -20,8 +18,6 @@ def load_categories():
     return classes
 
 # Load model
-
-
 def load_model():
     model = models.resnet18(num_classes=365)
     model_file = 'resnet18_places365.pth.tar'
@@ -42,8 +38,6 @@ def load_model():
     return model
 
 # Predict scene
-
-
 def predict_scene(image_path, model, classes):
     center_crop = transforms.Compose([
         transforms.Resize((256, 256)),
@@ -62,31 +56,28 @@ def predict_scene(image_path, model, classes):
                    for idx, prob in zip(top5.indices[0], top5.values[0])]
     return predictions
 
-# Homepage with upload form
-
-
+# Homepage with upload form (this won't be used by Flutter, just for testing)
 @app.route('/')
 def home():
-    return render_template_string("""
-    <!doctype html>
-    <title>Scene Recognition</title>
-    <h1>Upload an image to predict scene</h1>
-    <form method="POST" action="/predict" enctype="multipart/form-data">
-      <input type="file" name="image" accept="image/*">
-      <input type="submit" value="Predict">
-    </form>
-    """)
+    return """
+    <html><body>
+        <h1>Upload an image to predict scene</h1>
+        <form method="POST" action="/predict" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*">
+            <input type="submit" value="Predict">
+        </form>
+    </body></html>
+    """
 
-# Prediction route
-
-
+# Prediction route (returns JSON for Flutter)
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'image' not in request.files:
-        return 'No image file provided', 400
+        return jsonify({'error': 'No image file provided'}), 400
+
     file = request.files['image']
     if file.filename == '':
-        return 'No selected file', 400
+        return jsonify({'error': 'No selected file'}), 400
 
     img_path = 'temp.jpg'
     file.save(img_path)
@@ -95,20 +86,11 @@ def predict():
     model = load_model()
     predictions = predict_scene(img_path, model, classes)
 
-    result_html = "<h2>Top Predictions:</h2><ul>"
-    for scene, prob in predictions:
-        result_html += f"<li>{scene} ({prob:.4f})</li>"
-    result_html += "</ul>"
+    # Format predictions as JSON
+    results = [{'scene': scene, 'probability': round(prob, 4)} for scene, prob in predictions]
 
-    return render_template_string("""
-    <!doctype html>
-    <title>Result</title>
-    <h1>Prediction Result</h1>
-    """ + result_html + """
-    <a href="/">Try another image</a>
-    """)
+    return jsonify({'predictions': results})
 
-    
 if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 10000))
